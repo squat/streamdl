@@ -1,0 +1,20 @@
+[project]
+name = "streamdl"
+version = "0.1.0"
+description = "A Streamlit frontend for spotDL"
+readme = "README.md"
+authors = [
+    { name = "squat", email = "lserven@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "spotdl>=4.4.2",
+    "streamlit>=1.49.1",
+]
+
+[project.scripts]
+streamdl = "streamdl:main"
+
+[build-system]
+requires = ["uv_build>=0.8.14,<0.9.0"]
+build-backend = "uv_build"
