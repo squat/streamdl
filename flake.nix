@@ -32,7 +32,16 @@
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    {
+      overlays = {
+        default = inputs.self.overlays.streamdl;
+        streamdl = final: prev: {
+          streamdl = inputs.self.packages.${prev.system}.streamdl;
+        };
+      };
+
+    }
+    // inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.git-hooks-nix.flakeModule
       ];
@@ -46,6 +55,7 @@
           pkgs,
           system,
           config,
+          self,
           ...
         }:
         let
