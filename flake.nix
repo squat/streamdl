@@ -32,24 +32,31 @@
 
   outputs =
     inputs:
-    {
-      overlays = {
-        default = inputs.self.overlays.streamdl;
-        streamdl = final: prev: {
-          streamdl = inputs.self.packages.${prev.system}.streamdl;
-        };
-      };
-
-    }
-    // inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.git-hooks-nix.flakeModule
       ];
+
       systems = [
         "x86_64-linux"
         "aarch64-linux"
         "aarch64-darwin"
       ];
+
+      flake = {
+        overlays = {
+          default = inputs.self.overlays.streamdl;
+          streamdl = final: prev: {
+            streamdl = inputs.self.packages.${prev.system}.streamdl;
+          };
+        };
+
+        nixosModules = {
+          default = inputs.self.nixosModules.streamdl;
+          streamdl = import ./nix/modules/nixos.nix { inherit (inputs) self; };
+        };
+      };
+
       perSystem =
         {
           pkgs,

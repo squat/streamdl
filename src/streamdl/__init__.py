@@ -6,7 +6,7 @@ from streamdl import app
 
 
 def main():
-    sys.argv.extend(["run", app.__file__])
+    sys.argv = sys.argv[:1] + ["run", app.__file__] + sys.argv[1:]
     streamlit.__main__.main(prog_name="streamlit")
 
 
