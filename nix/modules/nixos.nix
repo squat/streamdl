@@ -35,13 +35,19 @@ in
         pkgsText = "streamdl.packages.\${pkgs.stdenv.system}";
       };
 
-      spotDLSettings = mkOption {
+      spotDLConfig = mkOption {
         type = submodule {
           freeformType = settingsFormat.type;
         };
         default = { };
         example = { };
         description = "Configuration for spotDL, see <https://spotdl.readthedocs.io/en/latest/usage/#config-file> for supported values.";
+      };
+
+      spotDLConfigFile = mkOption {
+        type = path;
+        example = "/var/lib/streamdl.json";
+        description = "Configuration file for spotDL, see <https://spotdl.readthedocs.io/en/latest/usage/#config-file> for supported values. Overrides `spotDLConfig`.";
       };
 
       user = mkOption {
@@ -100,6 +106,11 @@ in
       inherit (lib)
         mkIf
         ;
+      configFile =
+        if cfg.spotDLConfigFile != null then
+          cfg.spotDLConfigFile
+        else
+          settingsFormat.generate "config.json" cfg.spotdlConfig;
     in
     mkIf cfg.enable {
       systemd = {
@@ -135,7 +146,7 @@ in
             ExecStart = ''
               ${cfg.package}/bin/streamdl --browser.gatherUsageStats ${
                 if cfg.gatherUsageStats then "true" else "false"
-              } --server.address ${cfg.address} --server.port ${toString cfg.port} --server.headless true -- --config ${settingsFormat.generate "config.json" cfg.spotDLSettings}
+              } --server.address ${cfg.address} --server.port ${toString cfg.port} --server.headless true -- --config ${configFile}
             '';
             User = cfg.user;
             Group = cfg.group;
@@ -148,6 +159,7 @@ in
               cfg.dataDirectory
             ];
             BindReadOnlyPaths = [
+              configFile
               # streamdl uses online services.
               "${config.security.pki.caBundle}:/etc/ssl/certs/ca-certificates.crt"
               builtins.storeDir
