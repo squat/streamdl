@@ -45,7 +45,8 @@ in
       };
 
       spotDLConfigFile = mkOption {
-        type = path;
+        type = lib.types.nullOr lib.types.path;
+        default = null;
         example = "/var/lib/streamdl.json";
         description = "Configuration file for spotDL, see <https://spotdl.readthedocs.io/en/latest/usage/#config-file> for supported values. Overrides `spotDLConfig`.";
       };
@@ -110,7 +111,7 @@ in
         if cfg.spotDLConfigFile != null then
           cfg.spotDLConfigFile
         else
-          settingsFormat.generate "config.json" cfg.spotdlConfig;
+          settingsFormat.generate "config.json" cfg.spotDLConfig;
     in
     mkIf cfg.enable {
       systemd = {

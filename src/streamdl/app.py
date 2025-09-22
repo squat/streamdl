@@ -71,7 +71,12 @@ def initialize() -> State:
         asyncio.set_event_loop(loop)
 
     parser = argparse.ArgumentParser(prog="streamdl")
-    parser.add_argument("-c", "--config", type=pathlib.Path)
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="path to the spotDL configuration JSON file",
+        type=pathlib.Path,
+    )
     arguments = parser.parse_args()
 
     default_opts = spotdl.utils.config.DOWNLOADER_OPTIONS

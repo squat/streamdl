@@ -10,7 +10,7 @@ RUN cp -R $(nix-store -qR result/) /tmp/nix-store-closure
 
 FROM scratch
 
-WORKDIR /build
+WORKDIR /data
 
 COPY --from=builder /tmp/nix-store-closure /nix/store
 COPY --from=builder /tmp/build/result /build
