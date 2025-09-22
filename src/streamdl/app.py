@@ -16,6 +16,7 @@ import spotdl.download.downloader
 import spotdl.download.progress_handler
 import spotdl.types.song
 import spotdl.utils.config
+import spotdl.utils.logging
 import spotdl.utils.search
 import spotdl.utils.spotify
 import streamlit as st
@@ -106,6 +107,8 @@ def initialize() -> State:
             default_opts,
         )
     )
+    spotdl.utils.logging.init_logging(dopts["log_level"], dopts["log_format"])
+
     downloader = spotdl.download.downloader.Downloader(dopts, loop)
     downloads: dict[str, Download] = {}
     executor = concurrent.futures.ThreadPoolExecutor(
