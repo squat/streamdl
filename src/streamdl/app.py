@@ -178,6 +178,7 @@ def group_songs(
 
 
 def render_search(i: int, search: Search) -> None:
+    _state = initialize()
     key_prefix = i
     with st.chat_message(name="user", avatar=":material/search:"):
         with st.expander(search.query):
@@ -230,12 +231,10 @@ def render_search(i: int, search: Search) -> None:
             for sl in search.song_lists:
                 for song in sl:
                     if st.session_state[f"{key_prefix}/{song.song_id}"]:
-                        initialize().downloads[song.song_id] = Download(
-                            song, ["Queued"], 0
-                        )
-                        initialize().futures.append(
-                            initialize().executor.submit(
-                                initialize().downloader.search_and_download, song
+                        _state.downloads[song.song_id] = Download(song, ["Queued"], 0)
+                        _state.futures.append(
+                            _state.executor.submit(
+                                _state.downloader.search_and_download, song
                             )
                         )
 
@@ -244,12 +243,26 @@ def render_search(i: int, search: Search) -> None:
 
 @st.fragment
 def render_downloads(downloads: list[Download], state: States) -> None:
+    _state = initialize()
     with st.expander(f"{state}: {len(downloads)}"):
         for d in downloads:
             status = st.status(d.label())
             with status:
                 for s in d.statuses:
                     st.write(s)
+                if state == "error":
+
+                    def cb() -> None:
+                        _state.downloads[d.song.song_id] = Download(
+                            d.song, ["Queued"], 0
+                        )
+                        _state.futures.append(
+                            _state.executor.submit(
+                                _state.downloader.search_and_download, d.song
+                            )
+                        )
+
+                    st.button("Retry", on_click=cb, key=f"{d.song.song_id}/retry")
             status.update(state=d.state())
 
 
