@@ -2,12 +2,14 @@ import argparse
 import asyncio
 import collections
 import concurrent.futures
+import datetime
 import functools
 import json
 import os
 import pathlib
 import random
 import string
+import time
 from dataclasses import dataclass
 
 import spotdl
@@ -127,20 +129,40 @@ def initialize() -> State:
         if download.statuses[-1] != status:
             download.statuses.append(song_tracker.status)
         download.progress = int(song_tracker.progress)
-
-        ctx = get_script_run_ctx()
-        assert ctx, "Context must be set with `add_script_run_ctx`."
-        session_info = get_instance()._session_mgr.get_active_session_info(
-            ctx.session_id
-        )
-        assert session_info, "Session must be active."
-        session_info.session.request_rerun(None)
-        st.rerun()
+        debounce_rerun()
         return None
 
     downloader.progress_handler.update_callback = cb
 
     return State(downloader, downloads, executor, futures)
+
+
+def rerun_from_thread() -> None:
+    ctx = get_script_run_ctx()
+    assert ctx, "Context must be set with `add_script_run_ctx`."
+    session_info = get_instance()._session_mgr.get_active_session_info(ctx.session_id)
+    assert session_info, "Session must be active."
+    session_info.session.request_rerun(None)
+
+
+def debounce_rerun() -> None:
+    last_rerun: datetime.datetime = st.session_state["last_rerun"]
+    now = datetime.datetime.now(tz=datetime.UTC)
+    if now - last_rerun > datetime.timedelta(microseconds=100_000):
+        st.session_state["last_rerun"] = now
+        rerun_from_thread()
+        return None
+
+    rerun_at: datetime.datetime = st.session_state["rerun_at"]
+    # Someone else will re-run in the future.
+    if rerun_at > now:
+        return None
+
+    st.session_state["rerun_at"] = now + (now - last_rerun)
+    time.sleep((now - last_rerun).microseconds / 1000_000)
+    st.session_state["last_rerun"] = now
+    rerun_from_thread()
+    return None
 
 
 def group_songs(
@@ -226,6 +248,11 @@ def main() -> None:
         st.session_state.searches = []
 
     state = initialize()
+    if "last_rerun" not in st.session_state:
+        st.session_state["last_rerun"] = datetime.datetime.now(tz=datetime.UTC)
+
+    if "rerun_at" not in st.session_state:
+        st.session_state["rerun_at"] = datetime.datetime.now(tz=datetime.UTC)
 
     st.title("Search for music 🎶")
 
