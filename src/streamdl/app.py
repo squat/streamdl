@@ -41,13 +41,13 @@ class Download:
         return label
 
     def state(self) -> States:
-        state: States = "running"
+        s: States = "running"
         if self.progress == 100:
-            state = "complete"
+            s = "complete"
         if self.statuses[-1] == "Error":
-            state = "error"
+            s = "error"
 
-        return state
+        return s
 
 
 @dataclass
@@ -242,12 +242,23 @@ def render_search(i: int, search: Search) -> None:
         st.button("Download", on_click=cb, key=f"{key_prefix}/download")
 
 
+@st.fragment
+def render_downloads(downloads: list[Download], state: States) -> None:
+    with st.expander(f"{state}: {len(downloads)}"):
+        for d in downloads:
+            status = st.status(d.label())
+            with status:
+                for s in d.statuses:
+                    st.write(s)
+            status.update(state=d.state())
+
+
 def main() -> None:
     # Initialize search history.
     if "searches" not in st.session_state:
         st.session_state.searches = []
 
-    state = initialize()
+    _state = initialize()
     if "last_rerun" not in st.session_state:
         st.session_state["last_rerun"] = datetime.datetime.now(tz=datetime.UTC)
 
@@ -258,12 +269,12 @@ def main() -> None:
 
     # Render sidebar.
     with st.sidebar:
-        for d in state.downloads.values():
-            status = st.status(d.label())
-            with status:
-                for s in d.statuses:
-                    st.write(s)
-            status.update(state=d.state())
+        st.header("Downloads")
+        states: list[States] = ["running", "complete", "error"]
+        for state in states:
+            render_downloads(
+                [d for d in _state.downloads.values() if d.state() == state], state
+            )
 
     # Render search history.
     for i, search in enumerate(st.session_state.searches):
@@ -273,11 +284,11 @@ def main() -> None:
     if query := st.chat_input("URL / name / artist: name / album: name"):
         songs = spotdl.utils.search.get_simple_songs(
             [query],
-            use_ytm_data=state.downloader.settings["ytm_data"],
-            playlist_numbering=state.downloader.settings["playlist_numbering"],
-            albums_to_ignore=state.downloader.settings["ignore_albums"],
-            album_type=state.downloader.settings["album_type"],
-            playlist_retain_track_cover=state.downloader.settings[
+            use_ytm_data=_state.downloader.settings["ytm_data"],
+            playlist_numbering=_state.downloader.settings["playlist_numbering"],
+            albums_to_ignore=_state.downloader.settings["ignore_albums"],
+            album_type=_state.downloader.settings["album_type"],
+            playlist_retain_track_cover=_state.downloader.settings[
                 "playlist_retain_track_cover"
             ],
         )
