@@ -860,7 +860,7 @@ wheels = [
 
 [[package]]
 name = "spotdl"
-version = "4.4.2"
+version = "4.4.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -882,9 +882,9 @@ dependencies = [
     { name = "yt-dlp" },
     { name = "ytmusicapi" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0a/63/0a50124fd73fa5e4acea21f5d8960c5dc0146fad1a4c781a90e9fe1ec382/spotdl-4.4.2.tar.gz", hash = "sha256:4c309f1046b914dea770f9440d596a30624802b5efc3ca4ec61f078e5c3e396e", size = 3888204, upload-time = "2025-08-31T00:54:07.754Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/22/9b6ebf3caabc4e16c5fda4754b91b8afc6a3c40d34a0717686752cca38bc/spotdl-4.4.3.tar.gz", hash = "sha256:5fa79fb3a1ac91ce434bb1713734ed2ca9c419d2de859e4031676884f0fe9dc7", size = 3888424, upload-time = "2025-10-08T11:00:50.279Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/93/14e5d1f10a7688c35997575c5a7b0eae9d6941b7e4ef97436b6c575ef67c/spotdl-4.4.2-py3-none-any.whl", hash = "sha256:933e1be26f681fbe65067edd72bc93045cef7e2d2570367b37ae2751fdaffe52", size = 117234, upload-time = "2025-08-31T00:54:05.784Z" },
+    { url = "https://files.pythonhosted.org/packages/03/02/c868f88b57d2152e3675204ef83db445f4d1ee3b987514784c60f55ab1c2/spotdl-4.4.3-py3-none-any.whl", hash = "sha256:9afb8cbc4c8312d5370f97eb610bb569533eb93597d78ea60180219a4b16d0a2", size = 117458, upload-time = "2025-10-08T11:00:48.958Z" },
 ]
 
 [[package]]
@@ -1157,11 +1157,11 @@ wheels = [
 
 [[package]]
 name = "yt-dlp"
-version = "2025.9.5"
+version = "2025.9.26"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/50/b2/fb255d991857a6a8b2539487ed6063e7bf318f19310d81f039dedb3c2ad6/yt_dlp-2025.9.5.tar.gz", hash = "sha256:9ce080f80b2258e872fe8a75f4707ea2c644e697477186e20b9a04d9a9ea37cf", size = 3045982, upload-time = "2025-09-05T23:07:53.962Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/58/8f/0daea0feec1ab85e7df85b98ec7cc8c85d706362e80efc5375c7007dc3dc/yt_dlp-2025.9.26.tar.gz", hash = "sha256:c148ae8233ac4ce6c5fbf6f70fcc390f13a00f59da3776d373cf88c5370bda86", size = 3037475, upload-time = "2025-09-26T22:23:42.882Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/06/64/b3cc116e4f209c493f23d6af033c60ba32df74e086190fbed2bdc0073d12/yt_dlp-2025.9.5-py3-none-any.whl", hash = "sha256:68a03b5c50e3d0f6af7244bd4bf491c1b12e4e2112b051cde05cdfd2647eb9a8", size = 3272317, upload-time = "2025-09-05T23:07:51.396Z" },
+    { url = "https://files.pythonhosted.org/packages/35/94/18210c5e6a9d7e622a3b3f4a73dde205f7adf0c46b42b27d0da8c6e5c872/yt_dlp-2025.9.26-py3-none-any.whl", hash = "sha256:36f5fbc153600f759abd48d257231f0e0a547a115ac7ffb05d5b64e5c7fdf8a2", size = 3241906, upload-time = "2025-09-26T22:23:39.976Z" },
 ]
 
 [[package]]
