@@ -17,7 +17,7 @@ let
     ;
   inherit (lib.types)
     bool
-    float
+    ints
     nullOr
     path
     port
@@ -83,9 +83,9 @@ in
       };
 
       downloadDelay = mkOption {
-        type = float;
-        default = 0.0;
-        example = 5.0;
+        type = ints.unsigned;
+        default = 0;
+        example = 5;
         description = ''
           Number of seconds to wait before starting each individual song
           download.  When set to a value greater than zero, downloads are
@@ -168,7 +168,7 @@ in
         // (optionalAttrs (cfg.ytDlpArgs != null) {
           yt_dlp_args = cfg.ytDlpArgs;
         })
-        // (optionalAttrs (cfg.downloadDelay != 0.0) {
+        // (optionalAttrs (cfg.downloadDelay != 0) {
           download_delay = cfg.downloadDelay;
         });
       configFile =
