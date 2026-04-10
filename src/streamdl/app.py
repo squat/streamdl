@@ -56,6 +56,7 @@ class State:
     downloads: dict[str, Download]
     executor: concurrent.futures.Executor
     futures: list[concurrent.futures.Future]
+    download_delay: float
 
 
 @dataclass
@@ -94,6 +95,12 @@ def initialize() -> State:
         with open(arguments.config, "r", encoding="utf-8") as config_file:
             config = json.load(config_file)
 
+    # download_delay is a streamdl-specific option (not passed to spotDL).
+    # It serialises downloads and inserts a sleep between each one to avoid
+    # triggering YouTube rate limits.  Default of 0 means no delay / parallel
+    # downloads (the original behaviour).
+    download_delay: float = float(config.pop("download_delay", 0))
+
     spotdl.utils.spotify.SpotifyClient.init(
         **spotdl.utils.config.SpotifyOptions(
             **spotdl.utils.config.create_settings_type(
@@ -113,8 +120,12 @@ def initialize() -> State:
 
     downloader = spotdl.download.downloader.Downloader(dopts, loop)
     downloads: dict[str, Download] = {}
+    # When a download delay is configured we force a single worker so that
+    # downloads are strictly serialised and the inter-download sleep is
+    # respected.  Without a delay we keep the original parallel behaviour.
+    executor_workers = 1 if download_delay > 0 else default_opts["threads"]
     executor = concurrent.futures.ThreadPoolExecutor(
-        max_workers=default_opts["threads"],
+        max_workers=executor_workers,
         initializer=add_script_run_ctx,
         initargs=(None, get_script_run_ctx()),
     )
@@ -134,7 +145,7 @@ def initialize() -> State:
 
     downloader.progress_handler.update_callback = cb
 
-    return State(downloader, downloads, executor, futures)
+    return State(downloader, downloads, executor, futures, download_delay)
 
 
 def rerun_from_thread() -> None:
@@ -175,6 +186,23 @@ def group_songs(
             or "".join(random.choices(string.ascii_lowercase + string.digits, k=26))
         ].append(song)
     return sorted(song_lists.values(), key=lambda sl: sl[0].album_id)
+
+
+def _download_with_delay(
+    downloader: spotdl.download.downloader.Downloader,
+    song: spotdl.types.song.Song,
+    delay: float,
+) -> None:
+    """Download a song, sleeping *delay* seconds before starting.
+
+    When the executor has a single worker (delay > 0) the sleep effectively
+    inserts a pause *between* consecutive downloads, making the request pattern
+    look more like a human listener and reducing the likelihood of YouTube
+    rate-limiting the session.
+    """
+    if delay > 0:
+        time.sleep(delay)
+    downloader.search_and_download(song)
 
 
 def render_search(i: int, search: Search) -> None:
@@ -234,7 +262,10 @@ def render_search(i: int, search: Search) -> None:
                         _state.downloads[song.song_id] = Download(song, ["Queued"], 0)
                         _state.futures.append(
                             _state.executor.submit(
-                                _state.downloader.search_and_download, song
+                                _download_with_delay,
+                                _state.downloader,
+                                song,
+                                _state.download_delay,
                             )
                         )
 
@@ -258,7 +289,10 @@ def render_downloads(downloads: list[Download], state: States) -> None:
                         )
                         _state.futures.append(
                             _state.executor.submit(
-                                _state.downloader.search_and_download, d.song
+                                _download_with_delay,
+                                _state.downloader,
+                                d.song,
+                                _state.download_delay,
                             )
                         )
 
