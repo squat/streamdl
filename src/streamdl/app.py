@@ -56,7 +56,7 @@ class State:
     downloads: dict[str, Download]
     executor: concurrent.futures.Executor
     futures: list[concurrent.futures.Future]
-    download_delay: float
+    download_delay: int
 
 
 @dataclass
@@ -99,7 +99,7 @@ def initialize() -> State:
     # It serialises downloads and inserts a sleep between each one to avoid
     # triggering YouTube rate limits.  Default of 0 means no delay / parallel
     # downloads (the original behaviour).
-    download_delay: float = float(config.pop("download_delay", 0))
+    download_delay: int = int(config.pop("download_delay", 0))
 
     spotdl.utils.spotify.SpotifyClient.init(
         **spotdl.utils.config.SpotifyOptions(
@@ -191,7 +191,7 @@ def group_songs(
 def _download_with_delay(
     downloader: spotdl.download.downloader.Downloader,
     song: spotdl.types.song.Song,
-    delay: float,
+    delay: int,
 ) -> None:
     """Download a song, sleeping *delay* seconds before starting.
 
