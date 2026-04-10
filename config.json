@@ -1,1 +1,13 @@
-{"output": "{artist}/{album}/{disc-number}-{track-number} - {title}.{output-ext}"}
+{
+  "output": "{artist}/{album}/{disc-number}-{track-number} - {title}.{output-ext}",
+
+  "_comment_rate_limits": "Options below help avoid YouTube download rate limits.",
+
+  "download_delay": 0,
+
+  "_comment_cookie_file": "Path to a Netscape-format cookies file exported from a browser logged in to YouTube Music. See https://spotdl.readthedocs.io/en/latest/usage#youtube-music-premium",
+  "cookie_file": "",
+
+  "_comment_yt_dlp_args": "Extra arguments forwarded verbatim to yt-dlp. The example below passes a PO token which YouTube requires for bot-free playback. See https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide#no-account",
+  "yt_dlp_args": ""
+}

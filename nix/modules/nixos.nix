@@ -17,6 +17,8 @@ let
     ;
   inherit (lib.types)
     bool
+    float
+    nullOr
     path
     port
     str
@@ -49,6 +51,52 @@ in
         default = null;
         example = "/var/lib/streamdl.json";
         description = "Configuration file for spotDL, see <https://spotdl.readthedocs.io/en/latest/usage/#config-file> for supported values. Overrides `spotDLConfig`.";
+      };
+
+      cookieFile = mkOption {
+        type = nullOr path;
+        default = null;
+        example = "/run/secrets/youtube-cookies.txt";
+        description = ''
+          Path to a Netscape-format cookies file exported from a browser that is
+          logged in to YouTube / YouTube Music.  Providing cookies reduces the
+          chance of YouTube returning rate-limit or bot-detection errors.
+
+          See <https://spotdl.readthedocs.io/en/latest/usage#youtube-music-premium>
+          for instructions on how to export the file.
+
+          The file is bind-mounted read-only into the service sandbox.
+        '';
+      };
+
+      ytDlpArgs = mkOption {
+        type = nullOr str;
+        default = null;
+        example = ''--extractor-args "youtube:player_client=web_music,default;po_token=web_music+<po_token>"'';
+        description = ''
+          Extra arguments forwarded verbatim to yt-dlp.  The most effective
+          way to avoid YouTube rate limits is to supply a PO token here.
+
+          See <https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide#no-account>
+          for instructions on how to obtain a PO token without an account.
+        '';
+      };
+
+      downloadDelay = mkOption {
+        type = float;
+        default = 0.0;
+        example = 5.0;
+        description = ''
+          Number of seconds to wait before starting each individual song
+          download.  When set to a value greater than zero, downloads are
+          serialised (one at a time) and each download is preceded by a sleep
+          of this duration.  This makes the download pattern resemble a human
+          listener and significantly reduces the risk of hitting YouTube rate
+          limits when downloading large albums or playlists.
+
+          Set to `0` (the default) to disable the delay and restore the
+          original parallel-download behaviour.
+        '';
       };
 
       user = mkOption {
@@ -106,12 +154,28 @@ in
     let
       inherit (lib)
         mkIf
+        optionals
+        optionalAttrs
         ;
+      # Build the effective spotDL config by merging the user-supplied
+      # spotDLConfig with the rate-limit mitigation options that have
+      # dedicated NixOS options.
+      mergedConfig =
+        cfg.spotDLConfig
+        // (optionalAttrs (cfg.cookieFile != null) {
+          cookie_file = cfg.cookieFile;
+        })
+        // (optionalAttrs (cfg.ytDlpArgs != null) {
+          yt_dlp_args = cfg.ytDlpArgs;
+        })
+        // (optionalAttrs (cfg.downloadDelay != 0.0) {
+          download_delay = cfg.downloadDelay;
+        });
       configFile =
         if cfg.spotDLConfigFile != null then
           cfg.spotDLConfigFile
         else
-          settingsFormat.generate "config.json" cfg.spotDLConfig;
+          settingsFormat.generate "config.json" mergedConfig;
     in
     mkIf cfg.enable {
       systemd = {
@@ -166,7 +230,8 @@ in
               builtins.storeDir
               "/etc"
             ]
-            ++ lib.optionals config.services.resolved.enable [
+            ++ optionals (cfg.cookieFile != null) [ cfg.cookieFile ]
+            ++ optionals config.services.resolved.enable [
               "/run/systemd/resolve/stub-resolv.conf"
               "/run/systemd/resolve/resolv.conf"
             ];
