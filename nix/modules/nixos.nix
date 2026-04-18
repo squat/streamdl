@@ -184,28 +184,17 @@ in
             mode = "755";
             inherit (cfg) user group;
           };
-          "${cfg.workingDirectory}/spotdl"."d" = {
+          "${cfg.workingDirectory}/.config/spotdl"."d" = {
             mode = "700";
             inherit (cfg) user group;
           };
-        }
-        // (
-          if cfg.workingDirectory != cfg.dataDirectory then
-            {
-              "${cfg.workingDirectory}"."d" = {
-                mode = "700";
-                inherit (cfg) user group;
-              };
-            }
-          else
-            { }
-        );
+        };
         services.streamdl = {
           description = "streamdl -- Streamlit frontend for spotDL";
           after = [ "network.target" ];
           wantedBy = [ "multi-user.target" ];
           environment = {
-            XDG_DATA_HOME = "${cfg.workingDirectory}";
+            HOME = "${cfg.workingDirectory}";
           };
           serviceConfig = {
             ExecStart = ''
