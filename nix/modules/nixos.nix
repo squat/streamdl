@@ -224,6 +224,22 @@ in
               "/run/systemd/resolve/stub-resolv.conf"
               "/run/systemd/resolve/resolv.conf"
             ];
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+            PrivateDevices = true;
+            ProtectSystem = "strict";
+            ProtectHome = true;
+            PrivateMounts = true;
+            ProtectClock = true;
+            ProtectControlGroups = true;
+            ProtectHostname = true;
+            ProtectKernelLogs = true;
+            ProtectKernelModules = true;
+            ProtectKernelTunables = true;
+            ProtectProc = "invisible";
+            RemoveIPC = true;
+            RestrictRealtime = true;
+            RestrictSUIDSGID = true;
           };
         };
       };
