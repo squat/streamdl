@@ -136,7 +136,7 @@
                   unset PYTHONPATH
                   export REPO_ROOT=$(git rev-parse --show-toplevel)
                   . ${virtualenv}/bin/activate
-                  export PYTHONPATH="$VIRTUAL_ENV/lib/python3.13/site-packages:$PYTHONPATH"
+                  export PYTHONPATH="$VIRTUAL_ENV/lib/python${editablePythonSet.python.pythonVersion}/site-packages:$PYTHONPATH"
                 '';
                 packages =
                   with pkgs;
