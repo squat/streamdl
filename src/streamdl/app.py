@@ -141,7 +141,7 @@ def initialize() -> State:
             download.statuses.append(song_tracker.status)
         download.progress = int(song_tracker.progress)
         debounce_rerun()
-        return None
+        return
 
     downloader.progress_handler.update_callback = cb
 
@@ -162,18 +162,18 @@ def debounce_rerun() -> None:
     if now - last_rerun > datetime.timedelta(microseconds=100_000):
         st.session_state["last_rerun"] = now
         rerun_from_thread()
-        return None
+        return
 
     rerun_at: datetime.datetime = st.session_state["rerun_at"]
     # Someone else will re-run in the future.
     if rerun_at > now:
-        return None
+        return
 
     st.session_state["rerun_at"] = now + (now - last_rerun)
     time.sleep((now - last_rerun).microseconds / 1000_000)
     st.session_state["last_rerun"] = now
     rerun_from_thread()
-    return None
+    return
 
 
 def group_songs(
@@ -283,7 +283,7 @@ def render_downloads(downloads: list[Download], state: States) -> None:
                     st.write(s)
                 if state == "error":
 
-                    def cb() -> None:
+                    def cb(d=d) -> None:
                         _state.downloads[d.song.song_id] = Download(
                             d.song, ["Queued"], 0
                         )
